@@ -1,0 +1,84 @@
+﻿@using System
+@using System.IO
+@using System.Linq
+@using MSL.Common.Text;
+@using MSL.Core.Configuration
+@using MSL.Core.Data.Resources
+@using MSL.Core.Entities.Vulnerability
+@using MSL.Core.Process.Reporting;
+@inherits HelperBaseTemplate<ReportTemplateData>
+<?xml version="1.0" encoding="utf-8" ?>
+<?xml-stylesheet href="vulnerabilities-list.xsl" type="text/xsl" ?>
+
+<netsparker generated="@DateTime.Now.ToString()">
+	<target>
+		<url>@ReportingUtility.XmlShortEscape(Model.ScanProfile.Uri.AbsoluteUri)</url>
+		<scantime>@Convert.ToInt32(ScanSettings.Instance.ElapsedTime.TotalSeconds)</scantime>
+	</target>
+	@{
+		var reportOutput = new FileInfo(Model.ReportFilePath);
+		try {
+			File.Copy(string.Format(@"{0}/vulnerabilities-list.xsl", ResourceCategories.ReportTemplate.ResolveCustomDirectoryPath()), string.Format(@"{0}/vulnerabilities-list.xsl", reportOutput.Directory.FullName), true);
+		}
+		catch (Exception) {}
+
+		// Sort vulnerabilities based on their severity, Type, confirmation and certainty
+		var sortedVulns = from IVulnerabilityView v in Model.Vulnerabilities
+			orderby v.Severity descending, v.Order ascending, v.Type ascending, v.IsConfirmed descending, v.Certainty descending, v.AbsolutePath
+			where v.Visibility != VulnerabilityVisibility.Hidden && !v.IsIgnored
+			select v;
+
+		foreach (var vuln in sortedVulns) {
+			if (vuln.Visibility != VulnerabilityVisibility.Hidden) {
+
+				<vulnerability name="@vuln.Title" confirmed="@vuln.IsConfirmed.ToString()">
+					<url>@ReportingUtility.XmlShortEscape(vuln.AbsoluteUri)</url>
+					<type>@vuln.Type</type>
+					<severity>@vuln.Severity.ToString()</severity>
+					<certainty>@vuln.Certainty</certainty>
+
+					@if (!string.IsNullOrEmpty(vuln.AttackParameterName)) {
+						<vulnerableparametertype>@ReportingUtility.XmlShortEscape(vuln.AttackParameterTypeName)</vulnerableparametertype>
+						<vulnerableparameter>@ReportingUtility.XmlShortEscape(vuln.AttackParameterName)</vulnerableparameter>
+						<vulnerableparametervalue>@ReportingUtility.XmlShortEscape(vuln.AttackParameterValue)</vulnerableparametervalue>
+					}
+
+					<description>@ReportingUtility.XmlEscapeCharacterData(vuln.GetTemplate())</description>
+					@if (vuln.VersionVulnerabilities.Any()) {}
+						<knownvulnerabilities>
+							@foreach (var implied in vuln.VersionVulnerabilities) {
+								<knownvulnerability>
+									<description>@implied.Overview</description>
+									<impact>@implied.Impact</impact>
+									<solution>@implied.Solution</solution>
+									<references>@implied.References</references>
+								</knownvulnerability>
+							}
+						</knownvulnerabilities>
+					}
+
+					<rawrequest>@ReportingUtility.XmlEscapeCharacterData(vuln.GetRawRequest())</rawrequest>
+					<rawresponse>@ReportingUtility.XmlEscapeCharacterData(vuln.GetFullResponse())</rawresponse>
+					<extrainformation>
+						@foreach (var field in vuln.CustomFields) {
+							<info name="@field.Key">@ReportingUtility.XmlEscapeCharacterData(field.Value.HasMultipleValues ? string.Join(", ", field.Value.Values) : field.Value.Value)</info>
+						}
+					</extrainformation>
+
+					@if (vuln.Classification != null) {
+						<classification>
+							<OWASP2010>@vuln.Classification.Owasp2010</OWASP2010>
+							<OWASP2013>@vuln.Classification.Owasp2013</OWASP2013>
+							<WASC>@vuln.Classification.Wasc</WASC>
+							<CWE>@vuln.Classification.Cwe</CWE>
+							<CAPEC>@vuln.Classification.Capec</CAPEC>
+							<PCI2>@vuln.Classification.Pci2</PCI2>
+							<PCI3>@vuln.Classification.Pci3</PCI3>
+							<PCI31>@vuln.Classification.Pci31</PCI31>
+						</classification>
+					}
+				</vulnerability>
+			}
+		}
+	}
+</netsparker>
