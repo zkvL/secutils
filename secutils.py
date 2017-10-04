@@ -13,7 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import os, sys, re, xlwt, xlrd
 from glob import glob
@@ -32,11 +32,11 @@ class Secutils():
     GREEN = '\033[92m'      # success 4
     RED = '\033[91m'        # error 5
     ENDC = '\033[0m'
-    
+
     ''' report output file '''
     reportName = os.path.abspath('SecutilsReport.xls')
     separator = '/'
-    
+
     ''' xls styles '''
     sTitle = xlwt.easyxf('font: name Arial, colour white, bold on; pattern: pattern solid, fore_colour gray80; align: horiz center')
     sText = xlwt.easyxf('font: name Arial, colour black; align: wrap 1, vert top')
@@ -48,12 +48,12 @@ class Secutils():
     sLow = xlwt.easyxf('pattern: pattern solid, fore_colour aqua;')
     
     ''' report titles '''
-    tNmap = ['IP', 'Hostname', 'Port', 'Protocol', 'Service', 'Device', 'O.S.', 'Detail']
+    tNmap = ['IP', 'Hostname', 'Port', 'Protocol', 'Service', 'Device', 'Detail', 'O.S.', 'Host scripts']
     tNessus = ['Nessus ID', 'Vulnerability', 'Risk', 'IP', 'Port', 'Service', 'Protocol', 'Description', 'Solution', 'CVE', 'CVSS', 'Plugin output', 'References']
     tWeb = ['Vulnerability', 'Affected Item', 'Parameter', 'Detail', 'Risk', 'Description', 'Impact', 'Solution', 'Request', 'Response', 'CVE', 'CVSS', 'References']
     
     ''' report columns width '''
-    wNmap = [15, 20 , 7, 10, 15, 35, 35, 35]
+    wNmap = [15, 20 , 7, 10, 15, 35, 65, 35, 65]
     wNessus = [15, 30 , 10, 15, 10, 10, 10, 80, 80, 15, 15, 80, 40]
     wWeb = [30, 30 , 10, 50, 10, 80, 50, 80, 80, 80, 15, 15, 40]
     
@@ -107,7 +107,9 @@ class Secutils():
     '''  nmap module '''
     def getTargets(self, path):
         targets = list()
+        # Recursively proceesses all nmap XML files from all specified folders 
         if len(path) > 0:
+            # Obtains all nmap XML files from each folder
             p = path[0] + '*.xml'
             if (len(glob(p)) == 0):
                 self.printMsg(5, "[!] [Error] There's no xml files in " + p[:-5])
@@ -116,7 +118,9 @@ class Secutils():
                     self.printMsg(3, "Processing " + f.split(self.separator)[-1] + " ...")
                     dom = parse(f)
                     nmaprun = dom.documentElement
+                    # For each host in nmap XML file
                     for node in nmaprun.getElementsByTagName('host'):
+                        # Extracts IP addresses from all hosts with status = "up"
                         if node.getElementsByTagName('status')[0].getAttribute('state') == "up":
                             targets.append(node.getElementsByTagName('address')[0].getAttribute('addr'))
                     dom.unlink()
@@ -126,7 +130,9 @@ class Secutils():
     
     def getPorts(self, path):
         ports = list()
+        # Recursively proceesses all nmap XML files from all specified folders 
         if len(path) > 0:
+            # Obtains all nmap XML files from each folder
             p = path[0] + '*.xml'
             if (len(glob(p)) == 0):
                 self.printMsg(5, "[!] [Error] There's no xml files in " + p[:-5])                    
@@ -135,8 +141,11 @@ class Secutils():
                     self.printMsg(3, "Processing " + f.split(self.separator)[-1] + " ...")
                     dom = parse(f)
                     nmaprun = dom.documentElement
+                    # For each host in nmap XML file
                     for node in nmaprun.getElementsByTagName('host'):
+                        # Validate sif host is up & has ports node
                         if node.getElementsByTagName('status')[0].getAttribute('state') == "up" and node.getElementsByTagName('ports'):
+                            # For each port in port node extracts port id if state is "open"
                             for port in node.getElementsByTagName('ports')[0].getElementsByTagName('port'):
                                 if port.getElementsByTagName('state')[0].getAttribute('state') == "open":
                                     ports.append(port.getAttribute('portid'))
@@ -146,7 +155,9 @@ class Secutils():
         return sorted(set(ports))
             
     def nmap2xls(self, path, ws, row):
+        # Recursively proceesses all nmap XML files from all specified folders 
         if len(path) > 0:
+            # Obtains all nmap XML files from each folder
             p = path[0] + '*.xml'
             if (len(glob(p)) == 0):
                 self.printMsg(5, "[!] [Error] There's no xml files in " + p[:-5])
@@ -156,49 +167,72 @@ class Secutils():
                     try:
                         dom = parse(f)
                         nmaprun = dom.documentElement
+                        # For each host in nmap XML file retrieves all asociated information if host is up
                         for node in nmaprun.getElementsByTagName('host'):
+                            # If host is up, extracts IP address
                             if node.getElementsByTagName('status')[0].getAttribute('state') == "up":
                                 ip = node.getElementsByTagName('address')[0].getAttribute('addr')
+                                # Saves a pointer to the first row of the current host
+                                hostrow = row
+                                # Extracts hostname if exists
                                 hostname = os = ""
                                 if node.getElementsByTagName('hostnames') and node.getElementsByTagName('hostnames')[0].getElementsByTagName('hostname'):
                                     hostname = node.getElementsByTagName('hostnames')[0].getElementsByTagName('hostname')[0].getAttribute('name')
-                                         
+                                # Extracts OS parameter if exists         
                                 if node.getElementsByTagName('os') and node.getElementsByTagName('os')[0].getElementsByTagName('osmatch'):
                                     for o in node.getElementsByTagName('os')[0].getElementsByTagName('osmatch'):
                                         os = os + o.getAttribute('name') + " "  + o.getAttribute('accuracy') + "%\n"
-                                 
+                                # Extracts all open ports if any 
                                 if node.getElementsByTagName('ports'):
                                     for pto in node.getElementsByTagName('ports')[0].getElementsByTagName('port'):
+                                        # If port is open, extracts port id & protocol
                                         if pto.getElementsByTagName('state')[0].getAttribute('state') == "open":
                                             port = pto.getAttribute('portid')
                                             protocol = pto.getAttribute('protocol')
-                                             
+                                            # Extracts service & all asociated information if any 
                                             if pto.getElementsByTagName('service'):
                                                 service = pto.getElementsByTagName('service')[0].getAttribute('name')
                                                 product = pto.getElementsByTagName('service')[0].getAttribute('product')
                                                 version = pto.getElementsByTagName('service')[0].getAttribute('version')
                                                 extrainfo = pto.getElementsByTagName('service')[0].getAttribute('extrainfo')
-                                                                 
+                                            # Extract script information if any
+                                            detail = ""
+                                            if pto.getElementsByTagName('script'):
+                                                sindex = 0
+                                                for s in pto.getElementsByTagName('script'):
+                                                    detail = detail + pto.getElementsByTagName('script')[sindex].getAttribute('id') + " : " + pto.getElementsByTagName('script')[sindex].getAttribute('output') + "\n\n"
+                                                    sindex += 1
+                                            # Write all extracted information to Excel report                     
                                             ws.write(row, 0, ip, self.sText)
                                             ws.write(row, 1, hostname, self.sText)
                                             ws.write(row, 2, port, self.sText)
                                             ws.write(row, 3, protocol, self.sText)
                                             ws.write(row, 4, service, self.sText)
                                             ws.write(row, 5, product+" "+version+" "+extrainfo, self.sText)
-                                            ws.write(row, 6, os, self.sText)
+                                            ws.write(row, 6, detail, self.sText)
+                                            ws.write(row, 7, os, self.sText)
                                             row += 1
+                                # Check if scanning has run with scripts
+                                if node.getElementsByTagName('hostscript'):
+                                    hscript = ""
+                                    for script in node.getElementsByTagName('hostscript')[0].getElementsByTagName('script'):
+                                        hscript = hscript + script.getAttribute('id') + "\n" + script.getAttribute('output') + "\n\n"
+                                    ws.write_merge(hostrow, row-1, 8, 8, hscript, self.sText)
                         dom.unlink()
                     except ExpatError:
-                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file")
+                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file"); raise
+                    except IndexError:
+                        self.printMsg(5, "[!] [Error] A value in the XML file is missing!"); raise
                     except:
-                        self.printMsg(5, "[!] [Error] Something went wrong... sorry dude!")
-                        raise
+                        self.printMsg(5, "[!] [Unexpected Error]"); raise
             del path[0]
             self.nmap2xls(path, ws, row)
        
     '''  nessus module '''
     def nessus2xls(self, path, ws, row, *db):
+        # Recursively proceesses all nessus files from all specified folders
         if len(path) > 0:
+            # Obtains all nessus files from each folder
             p = path[0] + '*.nessus'
             if (len(glob(p)) == 0):
                 self.printMsg(5, "[!] [Error] There's no nessus files in " + p[:-8])
@@ -208,12 +242,15 @@ class Secutils():
                     try:
                         dom = parse(f)
                         nessusclientdata = dom.documentElement
+                        # For each host in nessus file registered with the ReportHost node
                         for node in nessusclientdata.getElementsByTagName('ReportHost'):
                             ip = node.getAttribute('name')
-                             
+                            # For each vulnerability in nessus file registered with the ReportItem node 
                             for item in node.getElementsByTagName('ReportItem'):
                                 risk = item.getAttribute('severity')
+                                # If risk is different from informative, appends a row in Excel report
                                 if risk != "0":
+                                    # Extracts all related vulnerability information
                                     pluginID = item.getAttribute('pluginID')
                                     vulnerability = item.getAttribute('pluginName')
                                     port = item.getAttribute('port')
@@ -222,10 +259,11 @@ class Secutils():
                                     description = item.getElementsByTagName('description')[0].childNodes[0].data
                                     solution = item.getElementsByTagName('solution')[0].childNodes[0].data
                                     cve = cvss = output = ref = ""
-             
+                                    # Extracts CVE information if exists
                                     if item.getElementsByTagName('cve'):
                                         for c in item.getElementsByTagName('cve'):
                                             cve = cve + c.childNodes[0].data + "\n"
+                                    # Extracts CVSS information if exists
                                     if item.getElementsByTagName('cvss_base_score'):
                                         cvss = "CVSS Base Score: " + item.getElementsByTagName('cvss_base_score')[0].childNodes[0].data
                                     if item.getElementsByTagName('cvss_temporal_score'): 
@@ -234,16 +272,18 @@ class Secutils():
                                         cvss = cvss + "\nCVSS Temporal Vector:" + item.getElementsByTagName('cvss_temporal_vector')[0].childNodes[0].data
                                     if item.getElementsByTagName('cvss_vector'):
                                         cvss = cvss + "\nCVSS Vector: " + item.getElementsByTagName('cvss_vector')[0].childNodes[0].data
+                                    # Extracts plugin output if exists
                                     if item.getElementsByTagName('plugin_output'):
                                         output = item.getElementsByTagName('plugin_output')[0].childNodes[0].data
+                                    # Extracts references if any
                                     if item.getElementsByTagName('see_also'):
                                         ref = item.getElementsByTagName('see_also')[0].childNodes[0].data
-                                    
+                                    # Translates vulnerabilities if specified by DB optional parameter
                                     found = False
                                     if db:
                                         vulns = xlrd.open_workbook(db[0])
                                         vsh = vulns.sheet_by_index(0)
-                                     
+                                        # Search for PlugnID in vulnerability Excel DB & if found vulnerability, description and solution parameters are replaced with translated values
                                         for vrow in range(1, vsh.nrows):
                                             try:
                                                 if int(pluginID) == int(vsh.cell_value(rowx=vrow,colx=0)):
@@ -254,7 +294,7 @@ class Secutils():
                                                     break
                                             except ValueError:
                                                 continue
-                                    
+                                    # Write all extracted information to Excel report
                                     ws.write(row, 0, pluginID, self.sText)
                                     if found or not db:
                                         ws.write(row, 1, vulnerability, self.sVuln)
@@ -281,10 +321,11 @@ class Secutils():
                                     row += 1
                         dom.unlink()
                     except ExpatError:
-                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file")
+                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file"); raise
+                    except IndexError:
+                        self.printMsg(5, "[!] [Error] A value in the XML file is missing!"); raise
                     except:
-                        self.printMsg(5, "[!] [Error] Something went wrong... sorry dude!")
-                        raise
+                        self.printMsg(5, "[!] [Unexpected Error]"); raise
             del path[0]
             if db:
                 self.nessus2xls(path, ws, row, db[0])
@@ -303,32 +344,46 @@ class Secutils():
                     try:
                         dom = parse(f)
                         scangroup = dom.documentElement
+                        # For each vulnerability in XML file registered with the ReportItem node
                         for node in scangroup.getElementsByTagName('ReportItem'):
+                            # If risk is different from informative, appends a row in Excel report
                             risk = node.getElementsByTagName('Severity')[0].childNodes[0].data
                             if "low" in risk or "medium" in risk or "high" in risk or "critical" in risk:
-                                detail = request = response = cve = cvss = ref = ""
-                                 
+                                vulnerability = affected = detail = description = impact = solution = request = response = cve = cvss = ref = "N/A"
+
                                 vulnerability = node.getElementsByTagName('Name')[0].childNodes[0].data
-                                affected = node.getElementsByTagName('Affects')[0].childNodes[0].data 
+                                # Extracts affected element if exists 
+                                if node.getElementsByTagName('Affects')[0].childNodes:
+                                    affected = node.getElementsByTagName('Affects')[0].childNodes[0].data 
+                                # Extracts vulnerability detail if exists & cleans all htlm tags 
                                 if node.getElementsByTagName('Details')[0].childNodes:
                                     detail = node.getElementsByTagName('Details')[0].childNodes[0].data
                                     detail = re.sub("<.*?>", " ", detail)
-                                description = re.sub("<.*?>", "", node.getElementsByTagName('Description')[0].childNodes[0].data)
-                                impact = node.getElementsByTagName('Impact')[0].childNodes[0].data
-                                solution = node.getElementsByTagName('Recommendation')[0].childNodes[0].data
-                                 
+                                # Extracts vulnerability description if exists 
+                                if node.getElementsByTagName('Description')[0].childNodes:
+                                    description = re.sub("<.*?>", "", node.getElementsByTagName('Description')[0].childNodes[0].data)
+                                # Extracts vulnerability impact if exists 
+                                if node.getElementsByTagName('Impact')[0].childNodes:
+                                    impact = node.getElementsByTagName('Impact')[0].childNodes[0].data
+                                # Extracts vulnerability solution if exists 
+                                if node.getElementsByTagName('Recommendation')[0].childNodes:
+                                    solution = node.getElementsByTagName('Recommendation')[0].childNodes[0].data
+                                # Extracts request & response if exists 
                                 if node.getElementsByTagName('TechnicalDetails')[0].getElementsByTagName('Request') and node.getElementsByTagName('TechnicalDetails')[0].getElementsByTagName('Request')[0].childNodes:
                                     request = node.getElementsByTagName('TechnicalDetails')[0].getElementsByTagName('Request')[0].childNodes[0].data
                                     response = node.getElementsByTagName('TechnicalDetails')[0].getElementsByTagName('Response')[0].childNodes[0].data
+                                # Extracts CVE information if exists 
                                 if node.getElementsByTagName('CVEList')[0].getElementsByTagName('CVE'):
                                     for c in node.getElementsByTagName('CVEList')[0].getElementsByTagName('CVE'):
                                         cve = cve + c.getElementsByTagName('Id')[0].childNodes[0].data + "\n"
+                                # Extracts CVSS information if exists 
                                 if node.getElementsByTagName('CVSS')[0].getElementsByTagName('Score') and node.getElementsByTagName('CVSS')[0].getElementsByTagName('Score')[0].childNodes:
                                     cvss = "Base Score:" + " " + node.getElementsByTagName('CVSS')[0].getElementsByTagName('Score')[0].childNodes[0].data + " " + node.getElementsByTagName('CVSS')[0].getElementsByTagName('Descriptor')[0].childNodes[0].data
+                                # Extracts references if any 
                                 if node.getElementsByTagName('References')[0].getElementsByTagName('Reference'):
                                     for r in node.getElementsByTagName('References')[0].getElementsByTagName('Reference'):
                                         ref = ref + r.getElementsByTagName('URL')[0].childNodes[0].data + "\n"
-                                                                      
+                                # Write all extracted information to Excel report 
                                 ws.write(row, 0, vulnerability, self.sVuln)
                                 ws.write(row, 1, affected, self.sText)
                                 ws.write(row, 3, detail, self.sText)
@@ -351,10 +406,11 @@ class Secutils():
                                 row += 1
                         dom.unlink()
                     except ExpatError:
-                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file")
+                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file"); raise
+                    except IndexError:
+                        self.printMsg(5, "[!] [Error] A value in the XML file is missing!"); raise
                     except:
-                        self.printMsg(5, "[!] [Error] Something went wrong... sorry dude!")
-                        raise
+                        self.printMsg(5, "[!] [Unexpected Error]"); raise
             del path[0]
             self.acunetix2xls(path, ws, row)
 
@@ -370,47 +426,60 @@ class Secutils():
                     try:
                         dom = parse(f)
                         netsparker = dom.documentElement
+                        # For each vulnerability in XML file registered with the vulnerability node
                         for node in netsparker.getElementsByTagName('vulnerability'):
+                            # If risk is different from informative, appends a row in Excel report
                             risk = node.getElementsByTagName('severity')[0].childNodes[0].data
                             if "Low" in risk or "Medium" in risk or "Important" in risk or "Critical" in risk:
-                                parameter = detail = request = response = ref = ""
-                                 
+                                affected = parameter = detail = description = request = response = ref = "N/A"
+                                
+                                # Extracts vulnerability & affected element if exists
                                 vulnerability =  node.getAttribute('name')
-                                affected = node.getElementsByTagName('url')[0].childNodes[0].data
+                                if node.getElementsByTagName('url')[0].childNodes:
+                                    affected = node.getElementsByTagName('url')[0].childNodes[0].data
+                                # Extracts affected parameter if exists
                                 if node.getElementsByTagName('vulnerableparameter'):
                                     parameter = node.getElementsByTagName('vulnerableparameter')[0].childNodes[0].data
-                                if node.getElementsByTagName('extrainformation')[0].getElementsByTagName('info'):
+                                # Extracts vulnerability detail if exists
+                                if node.getElementsByTagName('extrainformation')[0].getElementsByTagName('info')[0].childNodes:
                                     detail = node.getElementsByTagName('extrainformation')[0].getElementsByTagName('info')[0].getAttribute('name') + " " + node.getElementsByTagName('extrainformation')[0].getElementsByTagName('info')[0].childNodes[0].data
-                                 
-                                vuln = re.sub("<.*?>", "", node.getElementsByTagName('description')[0].childNodes[0].data)
-                                vuln = vuln.replace('Impact','&&').replace('Remedy','&&').replace('Impact','&&').replace('External References','&&').replace('Remedy References','&&')
-                                tmp = vuln.split("&&")
-                                 
-                                description = tmp[0]
-                                if tmp[1].split("Actions to Take"):
-                                    impact = re.sub("\t","",tmp[1].split("Actions to Take")[0])
-                                if len(tmp) > 2:
-                                    if tmp[2].split("Required Skills for Successful Exploitation"):
-                                        solution = re.sub("\t","",tmp[2].split("Required Skills for Successful Exploitation")[0])
-                                    elif tmp[2].split("External References"):
-                                        solution = re.sub("\t","",tmp[2].split("External References")[0])
-                                    elif tmp[2].split("Remedy References"):
-                                        solution = re.sub("\t","",tmp[2].split("Remedy References")[0])
-                                 
-                                request = node.getElementsByTagName('rawrequest')[0].childNodes[0].data
-                                response = node.getElementsByTagName('rawresponse')[0].childNodes[0].data
-                 
-                                vuln = node.getElementsByTagName('description')[0].childNodes[0].data
-                                index = 0
-                                while index < len(vuln):
-                                    index = vuln.find('<a href="', index)
-                                    if index == -1:
-                                        break
-                                    else:
-                                        index += 9
-                                        end = vuln.find('">', index)
-                                        ref = ref + vuln[index:end] + "\n"
-                                 
+                                # Extracts vulnerability description if exists - Description element contains several information splitted & treated separately by this script
+                                if node.getElementsByTagName('description')[0].childNodes: 
+                                    vuln = re.sub("<.*?>", "", node.getElementsByTagName('description')[0].childNodes[0].data)
+                                    vuln = vuln.replace('Impact','&&').replace('Remedy','&&').replace('Impact','&&').replace('External References','&&').replace('Remedy References','&&')
+                                    tmp = vuln.split("&&")
+                                    # Vulnerability description obtained from 1st splitted data
+                                    description = tmp[0]
+                                    # Vulnerability impact obtained from 2nd splitted data
+                                    if tmp[1].split("Actions to Take"):
+                                        impact = re.sub("\t","",tmp[1].split("Actions to Take")[0])
+                                    # 3rd splitted data is treated in order to get the vulnerability solution
+                                    if len(tmp) > 2:
+                                        if tmp[2].split("Required Skills for Successful Exploitation"):
+                                            solution = re.sub("\t","",tmp[2].split("Required Skills for Successful Exploitation")[0])
+                                        elif tmp[2].split("External References"):
+                                            solution = re.sub("\t","",tmp[2].split("External References")[0])
+                                        elif tmp[2].split("Remedy References"):
+                                            solution = re.sub("\t","",tmp[2].split("Remedy References")[0])
+                                # Extracts request if exists
+                                if node.getElementsByTagName('rawrequest')[0].childNodes:
+                                    request = node.getElementsByTagName('rawrequest')[0].childNodes[0].data
+                                # Extracts response if exists
+                                if node.getElementsByTagName('rawresponse')[0].childNodes:
+                                    response = node.getElementsByTagName('rawresponse')[0].childNodes[0].data
+                                # Extracts references from description element if exists
+                                if node.getElementsByTagName('description')[0].childNodes:
+                                    vuln = node.getElementsByTagName('description')[0].childNodes[0].data
+                                    index = 0
+                                    while index < len(vuln):
+                                        index = vuln.find('<a href="', index)
+                                        if index == -1:
+                                            break
+                                        else:
+                                            index += 9
+                                            end = vuln.find('">', index)
+                                            ref = ref + vuln[index:end] + "\n"
+                                # Write all extracted information to Excel report 
                                 ws.write(row, 0, vulnerability, self.sVuln)
                                 ws.write(row, 1, affected, self.sText)
                                 ws.write(row, 2, parameter, self.sText)
@@ -432,10 +501,11 @@ class Secutils():
                                 row += 1
                         dom.unlink()
                     except ExpatError:
-                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file")
+                        self.printMsg(5, "[!] [Error] Apparently there's a bad XML file"); raise
+                    except IndexError:
+                        self.printMsg(5, "[!] [Error] A value in the XML file is missing!"); raise
                     except:
-                        self.printMsg(5, "[!] [Error] Something went wrong... sorry dude!")
-                        raise
+                        self.printMsg(5, "[!] [Unexpected Error]"); raise
             del path[0]
             self.netsparker2xls(path, ws, row)
     
@@ -479,7 +549,7 @@ if __name__ == '__main__':
  \___ \\  ___\  \___|  |  /|  | |  |  |__\___ \ 
 /____  >\___  \___  |____/ |__| |__|____/____  >
      \/     \/    \/                         \/ 
-               - secutils v2.0 -
+              - secutils v2.5.1 -
                  c0d3d by zkvL
     ''' + secutils.ENDC
 
@@ -558,7 +628,7 @@ if __name__ == '__main__':
     except IOError:
         secutils.printMsg(5, "[!] [Error] Fail to open necessary files")
     except:
-        secutils.printMsg(5, "[!] [Error] Something went wrong... sorry dude!")
+        secutils.printMsg(5, "[!] [Unexpected Error]")
         raise
     
     

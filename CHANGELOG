@@ -7,6 +7,14 @@
 
 This file contains the history of the changes made to secutils since it was born.
 ------------------
+Secutils v2.5.1
+Release date: 04/Oct/2017
+
+Features | Changes:
+[+] Nmap scripts added to report
+[+] Minor bugs fixed within Acunetix functionality
+
+------------------
 Secutils v2.0
 Release date: 05/May/2016
 
