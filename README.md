@@ -5,14 +5,14 @@
 /____  >\___  \___  |____/ |__| |__|____/____  >
      \/     \/    \/                         \/ 
 
--[ Description ]-
------------------
+# Description
+--
 secutils is a python-written small set of utilities that helps with report generation from security tools such as Nmap, Nessus, Netsparker and Acunetix (Netsparker and Acunetix are currently being updated). 
 
 The aim of this tool is to help security teams to save time when creating reports from their findings with automated tools. secutils will generate Excel XLSX reports to allow having all the information from different tools in one single report.
 
--[ Overview ]-
---------------
+## Overview
+--
 secutils has a number of command line arguments described below:
 
 $ secutils --help
@@ -40,8 +40,8 @@ EXAMPLES:
         python secutils.py -rN Project/target1/nessus Project/target2/nessus/ -T spanish -o Report.xls
 
 
--[ Requirements ]-
-------------------
+## Requirements
+--
 * Python 2.7.x (https://www.python.org)
 Programmed and tested on Python 2.7.15
 
@@ -62,7 +62,7 @@ Only if nessus report translation is required. In order to translate the vulnera
 
 Currently only spanish translation is supported; if you have an update for the vulns described within the spanish.db please send me a mail and I'll be glad to update the file. Also if you can provide a different language schema I'll update the tool to support it.
 
--[ Contact ]-
--------------
+### Contact
+--
 Yael Basurto Esquivel (zkvL)
 zkvL7@protonmail.com
