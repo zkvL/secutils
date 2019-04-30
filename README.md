@@ -6,13 +6,11 @@
      \/     \/    \/                         \/ 
 ```
 ## Description
----
 secutils is a python-written small set of utilities that helps with report generation from security tools such as Nmap, Nessus, Netsparker and Acunetix (Netsparker and Acunetix are currently being updated). 
 
 The aim of this tool is to help security teams to save time when creating reports from their findings with automated tools. secutils will generate Excel XLSX reports to allow having all the information from different tools in one single report.
 
 ## Overview
----
 > secutils has a number of command line arguments described below:
 
 ```
@@ -42,7 +40,6 @@ EXAMPLES:
 
 ```
 ## Requirements
----
 * [Python 2.7.x](https://www.python.org)
 Programmed and tested on Python 2.7.15
 
