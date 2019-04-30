@@ -411,13 +411,17 @@ class Nessus:
             ws.autofilter(0, 0, row-1, 11) 
 
 def checkUpdate():
-    current = '3.0'
-    pattern = re.compile(r"Secutils\sv\d+\.\d+\.?\d*")
-    url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG'
-    data = urllib2.urlopen(url).read(1000)
+    try:
+        current = '3.0'
+        pattern = re.compile(r"Secutils\sv\d+\.\d+\.?\d*")
+        url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG.md'
+        data = urllib2.urlopen(url).read(1000)
 
-    if pattern.findall(str(data))[0].split("v")[1] != current:
-        print Fore.YELLOW + Back.BLUE + Style.BRIGHT + "[!] There's an update available at https://github.com/zkvL7/secutils [!]" + Style.RESET_ALL + "\n"
+        if pattern.findall(str(data))[0].split("v")[1] != current:
+            print Fore.YELLOW + Back.BLUE + Style.BRIGHT + "[!] There's an update available at https://github.com/zkvL7/secutils [!]" + Style.RESET_ALL + "\n"
+    except:
+        print Fore.RED + "[!] ERROR: Something happend when checking updates"
+        pass
 
 def options():
     parser = ArgumentParser(formatter_class=RawTextHelpFormatter,
@@ -443,8 +447,8 @@ def options():
         return parser.parse_args('--help'.split())
     else:
         return parser.parse_args()
-        
-if __name__ == '__main__':
+
+def main():
     init(autoreset=True)
     print Fore.CYAN + '''
                              __  .__.__          
@@ -514,4 +518,6 @@ if __name__ == '__main__':
     except:
         print Fore.RED + "[!] [Unexpected Error]"
         raise
-    
+
+if __name__ == '__main__':
+    main()
