@@ -7,19 +7,19 @@
 ```
 ***This file contains the history of the changes made to secutils since it was born.***
 ---
-Secutils v3.0 
-Release date: 26/Apr/2019
+Secutils v3.0  
+Release date: 26/Apr/2019  
 
-Features | Changes: 
-[+] Translation function redefined (DB File no needed anymore locally, the script will download the current version)  
-[+] CVSSv3 vector and base score included on Nessus reports (if apply)  
-[+] The script now performs update check  
-[-/+] Classes redefined by funtionality (more scalable)  
-[-/+] CLI colors redefinition (now works in Windows also)  
-[-/+] Excel sheets renamed  
-[-/+] Update from xls to xlsx reports format  
-[-] Removed funtionality to add reports to previous created Excel files in order to improve speed execution; moreover it's easier to move one sheet from a workbook to another using Excel itself rather than loading a whole file and editing it with python. Thus xlsxwriter is used instead of openpyxl and xlwt/rd.  
-[-] Acunetix & Netsparker modules temporarily deprecated (working on this and other tools to parse)  
+Features | Changes:  
+>[+] Translation function redefined (DB File no needed anymore locally, the script will download the current version)  
+>[+] CVSSv3 vector and base score included on Nessus reports (if apply)  
+>[+] The script now performs update check  
+>[-/+] Classes redefined by funtionality (more scalable)  
+>[-/+] CLI colors redefinition (now works in Windows also)  
+>[-/+] Excel sheets renamed  
+>[-/+] Update from xls to xlsx reports format  
+>[-] Removed funtionality to add reports to previous created Excel files in order to improve speed execution; moreover it's easier to move one sheet from a workbook to another using Excel itself rather than loading a whole file and editing it with python. Thus xlsxwriter is used instead of openpyxl and xlwt/rd.  
+>[-] Acunetix & Netsparker modules temporarily deprecated (working on this and other tools to parse)  
 
 ---
 Secutils v2.5.1 
