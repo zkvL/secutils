@@ -5,73 +5,64 @@
 /____  >\___  \___  |____/ |__| |__|____/____  >
      \/     \/    \/                         \/ 
 
-[+] Description [+]
--------------------
-secutils is a python-written small set of utilities that helps with report generation from security tools such as Nmap, Nessus, Netsparker and Acunetix. 
+-[ Description ]-
+-----------------
+secutils is a python-written small set of utilities that helps with report generation from security tools such as Nmap, Nessus, Netsparker and Acunetix (Netsparker and Acunetix are currently being updated). 
 
-The aim of this tool is to help security teams to save time when creating reports from their findings with automated tools. secutils will generate Excel reports to allow having all the information from different tools in one single report.
+The aim of this tool is to help security teams to save time when creating reports from their findings with automated tools. secutils will generate Excel XLSX reports to allow having all the information from different tools in one single report.
 
-[+] Overview [+]
-----------------
+-[ Overview ]-
+--------------
 secutils has a number of command line arguments described below:
 
 $ secutils --help
 usage: secutils.py [-h] [-v] [-o OUTPUT-FILE] [-t DIR [DIR ...]]
                    [-p DIR [DIR ...]] [-rn DIR [DIR ...]] [-rN DIR [DIR ...]]
-                   [-T FILE] [-ra DIR [DIR ...]] [-rk DIR [DIR ...]]
+                   [-T LANGUAGE]
 
 MISC:
   -h, --help         show this help message and exit
   -v, --version      show program's version number and exit
-  -o OUTPUT-FILE     Set an xls output file
+  -o OUTPUT-FILE     Set an xlsx output file
 
-NMAP UTILITIES:
+NMAP REPORT:
   -t DIR [DIR ...]   Create a list of targets from nmap files in xml format located in DIR
   -p DIR [DIR ...]   Create list of open ports from nmap files in xml format located in DIR
   -rn DIR [DIR ...]  Create an XLS report from nmap files in xml format located in DIR
 
-NESSUS UTILITIES:
+NESSUS REPORT:
   -rN DIR [DIR ...]  Create an XLS report from .nessus files located in DIR
-  -T FILE            Use an xls database FILE to translate nessus reports. Must be used along with -rN
-
-ACUNETIX UTILITIES:
-  -ra DIR [DIR ...]  Create an XLS report from acunetix files in xml format located in DIR
-
-NETSPARKER UTILITIES:
-  -rk DIR [DIR ...]  Create an XLS report from netsparker files in xml format located in DIR
+  -T LANGUAGE        Use an xls database FILE to translate nessus reports. Must be used along with -rN
 
 EXAMPLES: 
-            python secutils.py -t Project/Discovery/ -p Project/Enum/
-            python secutils.py -rn Project/Discovery/target1 -o Report
-            python secutils.py -rN Project/target1/nessus Project/target2/nessus/ -T VulnsDB_Spanish.xls -o Report.xls
+        python secutils.py -t Project/Discovery/ -p Project/Enum/
+        python secutils.py -rn Project/Discovery/target1 -o Report
+        python secutils.py -rN Project/target1/nessus Project/target2/nessus/ -T spanish -o Report.xls
 
 
-[+] Requirements [+]
---------------------
+-[ Requirements ]-
+------------------
 * Python 2.7.x (https://www.python.org)
-Programmed and tested on Python 2.7.9
+Programmed and tested on Python 2.7.15
 
 * External python packages:
-- wlrd (https://pypi.python.org/pypi/xlrd)
-- xlwt (https://pypi.python.org/pypi/xlwt)
-- xlutils (https://pypi.python.org/pypi/xlutils)
+- xlsxwriter (https://xlsxwriter.readthedocs.io/index.html)
+- colorama (https://pypi.org/project/colorama/)
+- progress (https://pypi.org/project/progress/)
 
 Try: pip install -r requirements.txt --user
 
 * Vulnerabilities database
-Only if nessus report translation is required. In order to translate the vulnerabilities reported by Nessus, it is necessary a database of translated vulnerabilities. secutils uses an Excel database file following the structure below:
+Only if nessus report translation is required. In order to translate the vulnerabilities reported by Nessus, it is necessary a database of translated vulnerabilities. secutils uses a SQLite database file following the structure below:
 
-- Column A: Nessus Plugin
-- Column B: Synopsis
+- Column A: Nessus Plugin ID
+- Column B: Name
 - Column C: Description
 - Column D: Solution
 
-These 4 columns are the required ones for secutils to work; it will start to look for a plugin from row 2, so row 1 can be used to write the titles as described in the structure above.
+Currently only spanish translation is supported; if you have an update for the vulns described within the spanish.db please send me a mail and I'll be glad to update the file. Also if you can provide a different language schema I'll update the tool to support it.
 
-* Netsparker reports
-The .xml reports from Netsparker must be generated with the "Detailed Scan Report (XML).xml.cshtml" template stored in the "netsparker template" folder distributed with secutils in order to get the complete description from findings. Currently, this template supports only Netsparker <= 4.5.2.0
-
-[+] Contact [+]
----------------
+-[ Contact ]-
+-------------
 Yael Basurto Esquivel (zkvL)
-zkvl.37@gmail.com
+zkvL7@protonmail.com
