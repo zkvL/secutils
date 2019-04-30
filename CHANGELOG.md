@@ -1,12 +1,12 @@
-                             __  .__.__          
+```                             __  .__.__          
   ______ ____  ____  __ ___/  |_|__|  |   ______
  /  ____/ __ _/ ___\|  |  \   __|  |  |  /  ___/
  \___ \  ___\  \___|  |  /|  | |  |  |__\___ \ 
 /____  >\___  \___  |____/ |__| |__|____/____  >
      \/     \/    \/                         \/ 
-
-This file contains the history of the changes made to secutils since it was born.
-------------------
+```
+***This file contains the history of the changes made to secutils since it was born.***
+---
 Secutils v3.0
 Release date: 26/Apr/2019
 
@@ -21,7 +21,7 @@ Features | Changes:
 [-] Removed funtionality to add reports to previous created Excel files in order to improve speed execution; moreover it's easier to move one sheet from a workbook to another using Excel itself rather than loading a whole file and editing it with python. Thus xlsxwriter is used instead of openpyxl and xlwt/rd.
 [-] Acunetix & Netsparker modules temporarily deprecated (working on this and other tools to parse)
 
-------------------
+---
 Secutils v2.5.1
 Release date: 04/Oct/2017
 
@@ -29,7 +29,7 @@ Features | Changes:
 [+] Nmap scripts added to report
 [+] Minor bugs fixed within Acunetix functionality
 
-------------------
+---
 Secutils v2.0
 Release date: 05/May/2016
 
@@ -42,14 +42,14 @@ Features | Changes:
 
 Sorry for the n^4 complexity at some methods
 
-------------------
+---
 Secutils v1.2
 Release date: 25/Oct/2015
 
 Features | Changes:
 [+] Minor bugs fixed
 
-------------------
+---
 Secutils v1.1
 Release date: 02/Aug/2015
 
@@ -57,7 +57,7 @@ Features | Changes:
 [+] Improved reports creation.
 [+] Use of colors in messages for *nix consoles.
 
-------------------
+---
 Secutils v1.0
 Release date: 18/Jul/2015
 
@@ -75,7 +75,7 @@ Supported tools:
 [+] Acunetix utilities
 [+] Netsparker utilities
 
-------------------
+---
 Secutils v0.9 Beta
 Release date: 27/Jun/2015
 
