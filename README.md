@@ -62,5 +62,4 @@ Only if nessus report translation is required. In order to translate the vulnera
 Currently only spanish translation is supported; if you have an update for the vulns described within the spanish.db please send me a mail and I'll be glad to update the file. Also if you can provide a different language schema I'll update the tool to support it.
 
 ### Contact
-Yael Basurto Esquivel (zkvL)
-zkvL7@protonmail.com
+[Yael Basurto Esquivel (zkvL)](mailto:zkvL7@protonmail.com)
