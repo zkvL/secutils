@@ -41,12 +41,13 @@ EXAMPLES:
 ```
 ## Requirements
 * [Python 2.7.x](https://www.python.org)
-Programmed and tested on Python 2.7.15
+
+> Programmed and tested on Python 2.7.15
 
 * External python packages:
-- [xlsxwriter](https://xlsxwriter.readthedocs.io/index.html)
-- [colorama](https://pypi.org/project/colorama/)
-- [progress](https://pypi.org/project/progress/)
+  - [xlsxwriter](https://xlsxwriter.readthedocs.io/index.html)
+  - [colorama](https://pypi.org/project/colorama/)
+  - [progress](https://pypi.org/project/progress/)
 
 > Try: pip install -r requirements.txt --user
 
