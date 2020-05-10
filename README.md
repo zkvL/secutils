@@ -40,16 +40,18 @@ EXAMPLES:
 
 ```
 ## Requirements
-* [Python 2.7.x](https://www.python.org)
+* ~~[Python 2.7.x](https://www.python.org/downloads/release/python-2718/)~~
+* [Python 3](https://www.python.org/downloads/)
 
 > Programmed and tested on Python 2.7.15
+> Migrated to Python 3 with `2to3` & tested on Python 3.7.7
 
 * External python packages:
   - [xlsxwriter](https://xlsxwriter.readthedocs.io/index.html)
   - [colorama](https://pypi.org/project/colorama/)
   - [progress](https://pypi.org/project/progress/)
 
-> Try: pip install -r requirements.txt --user
+> Try: pip3 install -r requirements.txt --user
 
 ### Vulnerabilities database
 Only if nessus report translation is required. In order to translate the vulnerabilities reported by Nessus, it is necessary a database of translated vulnerabilities. secutils uses a SQLite database file following the structure below:

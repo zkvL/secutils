@@ -7,6 +7,13 @@
 ```
 ***This file contains the history of the changes made to secutils since it was born.***
 ---
+Secutils v3.1 
+Release date: 09/May/2020
+
+Features | Changes:  
+>[+] Migrated to Python3 
+
+---
 Secutils v3.0  
 Release date: 26/Apr/2019  
 

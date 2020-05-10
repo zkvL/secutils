@@ -17,7 +17,7 @@
 
 import os, sys, re
 import sqlite3
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import xlsxwriter
 from glob import glob
 from time import sleep
@@ -98,10 +98,10 @@ class Nmap:
             # Obtains all nmap XML files from each folder
             p = path[0] + '*.xml'
             if (len(glob(p)) == 0):
-                print Fore.RED + "[!] [ERROR] There's no xml files in " + p[:-5]
+                print(Fore.RED + "[!] [ERROR] There's no xml files in " + p[:-5])
             else:    
                 for f in glob(p):
-                    print Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ..." 
+                    print(Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ...") 
                     dom = parse(f)
                     nmaprun = dom.documentElement
                     # For each host in nmap XML file
@@ -127,7 +127,7 @@ class Nmap:
             # Obtains all nmap XML files from each folder
             p = path[0] + '*.xml'
             if (len(glob(p)) == 0):
-                print Fore.RED + "[!] [ERROR] There's no xml files in " + p[:-5]
+                print(Fore.RED + "[!] [ERROR] There's no xml files in " + p[:-5])
             else:
                 for f in glob(p):
                     Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ..."
@@ -155,7 +155,7 @@ class Nmap:
                 Fore.RED + "[!] [ERROR] There's no xml files in " + p[:-5]
             else:
                 for f in glob(p):
-                    print Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ..." 
+                    print(Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ...") 
                     try:
                         dom = parse(f)
                         nmaprun = dom.documentElement
@@ -212,11 +212,11 @@ class Nmap:
                                     ws.merge_range(hostrow, 8, row-1, 8, hscript, self.stText)
                         dom.unlink()
                     except ExpatError:
-                        print Fore.RED + "[!] [ERROR] Apparently there's a bad XML file"; raise
+                        print(Fore.RED + "[!] [ERROR] Apparently there's a bad XML file"); raise
                     except IndexError:
-                        print Fore.RED + "[!] [ERROR] A value in the XML file is missing!"; raise
+                        print(Fore.RED + "[!] [ERROR] A value in the XML file is missing!"); raise
                     except:
-                        print Fore.RED + "[!] [Unexpected Error]"; raise
+                        print(Fore.RED + "[!] [Unexpected Error]"); raise
             del path[0]
             self.nmap2xls(path, ws, row)
         else:
@@ -286,10 +286,10 @@ class Nessus:
             self.reportName = os.path.abspath(args.output[0] + '.xlsx')
 
     def download_db(self, lang):
-        print Fore.CYAN + "Downloading lastest version of %s database ..." % (lang)
+        print(Fore.CYAN + "Downloading lastest version of %s database ..." % (lang))
         url = "https://github.com/zkvL7/secutils/raw/master/VulnsDBs/"+lang+".db"
         
-        data = urllib2.urlopen(url)
+        data = urllib.request.urlopen(url)
         data_lenght = int(data.info()['Content-Length'])
         block_size = 256
         with open(lang+'.db','wb') as db:
@@ -300,7 +300,7 @@ class Nessus:
                         break
                     else:
                         db.write(chuck)
-                        bar.next()
+                        next(bar)
 
     def getVulnT(self, c, id):
         vuln = c.execute('SELECT * FROM vulns WHERE "NessusID"=(?)', (id,)).fetchone()
@@ -312,10 +312,10 @@ class Nessus:
             # Obtains all nessus files from each folder
             p = path[0] + '*.nessus'
             if (len(glob(p)) == 0):
-                print Fore.RED + "[!] [ERROR] There's no nessus files in " + p[:-8]
+                print(Fore.RED + "[!] [ERROR] There's no nessus files in " + p[:-8])
             else:
                 for f in glob(p):
-                    print Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ..." 
+                    print(Fore.CYAN + "Processing " + f.split(self.separator)[-1] + " ...") 
                     try:
                         dom = parse(f)
                         nessusclientdata = dom.documentElement
@@ -397,11 +397,11 @@ class Nessus:
                                     row += 1
                         dom.unlink()
                     except ExpatError:
-                        print Fore.RED + "[!] [ERROR] Apparently there's a bad XML file"; raise
+                        print(Fore.RED + "[!] [ERROR] Apparently there's a bad XML file"); raise
                     except IndexError:
-                        print Fore.RED + "[!] [ERROR] A value in the XML file is missing!"; raise
+                        print(Fore.RED + "[!] [ERROR] A value in the XML file is missing!"); raise
                     except:
-                        print Fore.RED + "[!] [Unexpected Error]"; raise
+                        print(Fore.RED + "[!] [Unexpected Error]"); raise
             del path[0]
             if args:
                 self.nessus2xls(path, ws, row, args[0])
@@ -415,12 +415,12 @@ def checkUpdate():
         current = '3.0'
         pattern = re.compile(r"Secutils\sv\d+\.\d+\.?\d*")
         url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG.md'
-        data = urllib2.urlopen(url).read(1000)
+        data = urllib.request.urlopen(url).read(1000)
 
         if pattern.findall(str(data))[0].split("v")[1] != current:
-            print Fore.YELLOW + Back.BLUE + Style.BRIGHT + "[!] There's an update available at https://github.com/zkvL7/secutils [!]" + Style.RESET_ALL + "\n"
+            print(Fore.YELLOW + Back.BLUE + Style.BRIGHT + "[!] There's an update available at https://github.com/zkvL7/secutils [!]" + Style.RESET_ALL + "\n")
     except:
-        print Fore.RED + "[!] ERROR: Something happend when checking updates"
+        print(Fore.RED + "[!] ERROR: Something happend when checking updates")
         pass
 
 def options():
@@ -450,16 +450,16 @@ def options():
 
 def main():
     init(autoreset=True)
-    print Fore.CYAN + '''
+    print(Fore.CYAN + '''
                              __  .__.__          
   ______ ____  ____  __ ___/  |_|__|  |   ______
  /  ____/ __ _/ ___\|  |  \   __|  |  |  /  ___/
  \___ \\  ___\  \___|  |  /|  | |  |  |__\___ \ 
 /____  >\___  \___  |____/ |__| |__|____/____  >
      \/     \/    \/                         \/ 
-              - secutils v3.0 -
+              - secutils v3.1 -
                 c0d3d by zkvL
-    '''
+    ''')
     checkUpdate()
     args = options()
     try:
@@ -467,27 +467,27 @@ def main():
         if args.targets or args.ports or args.nmap:
             nmap = Nmap()
             if args.targets:
-                print Fore.YELLOW + "[-] Retrieve alive IPs from nmap output:"
+                print(Fore.YELLOW + "[-] Retrieve alive IPs from nmap output:")
                 nmap.write_t(nmap.getTargets(nmap.setPath(args.targets[0])))
-                print Fore.GREEN + "[+] targets.txt file successfully created!"
+                print(Fore.GREEN + "[+] targets.txt file successfully created!")
                 
             if args.ports:
-                print Fore.YELLOW + "[-] Retrieve open ports from nmap output"
+                print(Fore.YELLOW + "[-] Retrieve open ports from nmap output")
                 nmap.write_p(nmap.getPorts(nmap.setPath(args.ports[0])))
-                print Fore.GREEN + "[+] ports.txt file successfully created!"
+                print(Fore.GREEN + "[+] ports.txt file successfully created!")
             
             if args.nmap:
                 if args.output:
                     nmap.setOutput(args.output)
 
                 # Create the Excel file & set custom format
-                print Fore.YELLOW + "[-] Create Excel report from NMAP outputs:"
+                print(Fore.YELLOW + "[-] Create Excel report from NMAP outputs:")
                 with xlsxwriter.Workbook(nmap.reportName,{'strings_to_urls': False}) as workbook:
                     wb = nmap.confWb(workbook)
                     ws = wb.add_worksheet('Nmap Enumeration')
                     nmap.setTitle(ws)
                     nmap.nmap2xls(nmap.setPath(args.nmap[0]), ws, 1)
-                    print Fore.GREEN + "[+] Enumeration sheet was successfully created into file:\n" + nmap.reportName + "\n"
+                    print(Fore.GREEN + "[+] Enumeration sheet was successfully created into file:\n" + nmap.reportName + "\n")
 
         # Options for Nessus module operations
         if args.nessus:
@@ -496,7 +496,7 @@ def main():
                 nessus.setOutput(args.output)
             
             # Create the Excel file & set custom format
-            print Fore.YELLOW + "[-] Create Excel report from NESSUS outputs:"
+            print(Fore.YELLOW + "[-] Create Excel report from NESSUS outputs:")
             with xlsxwriter.Workbook(nessus.reportName,{'strings_to_urls': False}) as workbook:
                 wb = nessus.confWb(workbook)
                 ws = wb.add_worksheet('Vulnerability Assessment')
@@ -510,13 +510,13 @@ def main():
                     db_conn.close()
                 elif not args.lang or (args.lang and args.lang != 'spanish'):
                     if args.lang and args.lang != 'spanish':
-                        print Fore.RED + "[!] Currently only spanish language is supported; file will not be translated" 
+                        print(Fore.RED + "[!] Currently only spanish language is supported; file will not be translated") 
                     nessus.nessus2xls(nessus.setPath(args.nessus[0]), ws, 1)
-                print Fore.GREEN + "[+] Vuln Assessment sheet was successfully created into file:\n" +nessus.reportName + "\n"
+                print(Fore.GREEN + "[+] Vuln Assessment sheet was successfully created into file:\n" +nessus.reportName + "\n")
     except IOError:
-        print Fore.RED + "[!] ERROR: Fail to open necessary files"
+        print(Fore.RED + "[!] ERROR: Fail to open necessary files")
     except:
-        print Fore.RED + "[!] [Unexpected Error]"
+        print(Fore.RED + "[!] [Unexpected Error]")
         raise
 
 if __name__ == '__main__':
