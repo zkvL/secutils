@@ -8,6 +8,7 @@
 ***This file contains the history of the changes made to secutils since it was born.***
 ---
 Secutils v3.1 
+
 Release date: 09/May/2020
 
 Features | Changes:  
