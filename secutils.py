@@ -412,7 +412,7 @@ class Nessus:
 
 def checkUpdate():
     try:
-        current = '3.0'
+        current = '3.1'
         pattern = re.compile(r"Secutils\sv\d+\.\d+\.?\d*")
         url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG.md'
         data = urllib.request.urlopen(url).read(1000)
