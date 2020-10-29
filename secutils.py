@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Secutils
 # Copyright 2015 Yael Basurto
