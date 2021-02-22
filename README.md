@@ -47,10 +47,9 @@ EXAMPLES:
 >
 > Migrated to Python 3 with `2to3` & tested on Python 3.7.7
 
-* External python packages:
-  - [xlsxwriter](https://xlsxwriter.readthedocs.io/index.html)
-  - [colorama](https://pypi.org/project/colorama/)
-  - [progress](https://pypi.org/project/progress/)
+### External python packages:
+
+Refer to [requirements](./requirements.txt) file to get details on external python packages used, and install 'em with:
 
 > Try: pip3 install -r requirements.txt --user
 
@@ -65,4 +64,4 @@ Only if nessus report translation is required. In order to translate the vulnera
 Currently only spanish translation is supported; if you have an update for the vulns described within the spanish.db please send me a mail and I'll be glad to update the file. Also if you can provide a different language schema I'll update the tool to support it.
 
 ### Contact
-[Yael Basurto Esquivel (zkvL)](mailto:zkvL7@protonmail.com)
+[Yael | @zkvL7](mailto:zkvl7@pm.me)

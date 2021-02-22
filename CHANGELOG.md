@@ -18,9 +18,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Changed
 - Modified update validation method
 - Changed this CHANGELOG file to adopt [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format
+- Use of `requests` instead of `urllib` and `tqdm` instead of `progress.bar`
 
 ### Fixed
 - Fixed execution error when setting a report name `NameError: name 'args' is not defined`
+- Fixed execution error when downloading lastest version of translation database
 
 ---
 ## [3.0.1] - 2020-05-09
