@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 ---
-## [3.0.2] - 2020-05-09
+## [3.0.2] - 2021-02-22
 ### Changed
 - Modified update validation method
 - Changed this CHANGELOG file to adopt [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) format
