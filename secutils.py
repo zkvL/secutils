@@ -416,9 +416,10 @@ def checkUpdate():
     current = '3.0.2'
     pattern = re.compile(r"##\s\[\d+\.\d+\.\d+\]")
     url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG.md'
-    data = urllib.request.urlopen(url).read(1000)
+    data = requests.get(url, stream=True)
 
-    if (current not in pattern.findall(str(data))[0]):
+    lastest = pattern.findall(str(data.content))[0]
+    if (current not in lastest):
       print(Fore.YELLOW + Back.BLUE + Style.BRIGHT + "[!] There's an update available at https://github.com/zkvL7/secutils [!]" + Style.RESET_ALL + "\n")
   except:
     print(Fore.RED + "[!] ERROR: Something happend when checking updates")
