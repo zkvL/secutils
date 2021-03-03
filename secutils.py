@@ -86,10 +86,11 @@ class Nmap:
     else:
       self.reportName = os.path.abspath(output + '.xlsx')
 
-  def write_t(self, targets):
-    with open("targets.txt","w+") as file:
-      for t in targets:
-        file.write(t + "\n")
+  def write_nmap_data(self, data, filename, separator):
+    with open(filename,"w+") as file:
+      for i in range(len(data)-1):
+        file.write(data[i]+separator)
+      file.write(data[-1])
 
   def getTargets(self, path):
     targets = list()
@@ -113,12 +114,6 @@ class Nmap:
       del path[0]
       targets.extend(self.getTargets(path))
     return targets
-
-  def write_p(self, ports):
-    with open("ports.txt","w+") as file:
-      for i in range(len(ports)-1):
-        file.write(ports[i]+",")
-      file.write(ports[-1])
   
   def getPorts(self, path):
     ports = list()
@@ -286,28 +281,82 @@ class Nessus:
       self.reportName = os.path.abspath(output + '.xlsx')
 
   def download_db(self, lang):
-    print(Fore.CYAN + "Downloading lastest version of %s database ..." % (lang))
-    url = "https://github.com/zkvL7/secutils/raw/master/VulnsDBs/"+lang+".db"
+    if os.path.exists(lang+".db"):
+      print(Fore.GREEN + "[+] %s database already downloaded" % (lang))
+    else:
+      print(Fore.CYAN + "Downloading lastest version of %s database ..." % (lang))
+      url = "https://github.com/zkvL7/secutils/raw/master/VulnsDBs/"+lang+".db"
 
-    response = requests.get(url, stream=True)
-    total_size = int(response.headers.get('content-length', 0))
-    block_size = 256
+      response = requests.get(url, stream=True)
+      total_size = int(response.headers.get('content-length', 0))
+      block_size = 256
     
-    progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True)
-    with open(lang+'.db','wb') as db:
-      for data in response.iter_content(block_size):
-        progress_bar.update(len(data))
-        db.write(data)
-    progress_bar.close()
-    
-    if (total_size != 0 and progress_bar.n != total_size):
-      print(Fore.RED + "[!] [ERROR] Something failed when downloading db file"); raise
+      progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True)
+      with open(lang+'.db','wb') as db:
+        for data in response.iter_content(block_size):
+          progress_bar.update(len(data))
+          db.write(data)
+      progress_bar.close()
+      
+      if (total_size != 0 and progress_bar.n != total_size):
+        print(Fore.RED + "[!] [ERROR] Something failed when downloading db file"); raise
 
   def getVulnT(self, c, id):
     vuln = c.execute('SELECT * FROM vulns WHERE "NessusID"=(?)', (id,)).fetchone()
     return vuln
 
-  def nessus2xls(self, path, ws, row, *args):
+  def nessus2xlsx(self, ws, row, found, *data):
+    ws.write(row, 0, data[0], self.stText)
+    if found:
+      ws.write(row, 1, data[1], self.stVuln)
+    else:
+      ws.write(row, 1, data[1], self.stVulnNF)
+    if data[2] == "1":
+      ws.write(row, 2, "Low", self.stLow)
+    if data[2] == "2":
+      ws.write(row, 2, "Medium", self.stMedium)
+    if data[2] == "3":
+      ws.write(row, 2, "High", self.stHigh)
+    if data[2] == "4":
+      ws.write(row, 2, "Critical", self.stCritical)
+    ws.write(row, 3, data[3], self.stText)
+    ws.write(row, 4, data[4], self.stText)
+    ws.write(row, 5, data[5], self.stText)
+    ws.write(row, 6, data[6], self.stText)
+    ws.write(row, 7, data[7], self.stText)
+    ws.write(row, 8, data[8], self.stText)
+    ws.write(row, 9, data[9], self.stText)
+    ws.write(row, 10, data[10], self.stText)
+    ws.write(row, 11, data[11][0:32767], self.stText)
+    ws.write_string(row, 12, data[12], self.stText)
+
+  def nessus2txt(self, *data):
+    with open('SecutilsNessusReport.txt',"a+") as file:
+      file.write('-' * 64 + '\n')
+      file.write('Title: ' + data[0] + '\n')
+      file.write('-' * 64 + '\n')
+      file.write('Plugin ID: \t' + data[1] + '\n')
+      if data[2] == "1":
+        file.write('Risk: \tLow\n')
+      elif data[2] == "2":
+        file.write('Risk: \tMedium\n')
+      elif data[2] == "3":
+        file.write('Risk: \tHigh\n')
+      elif data[2] == "4":
+        file.write('Risk: \tCritical\n')
+      file.write('Affected item: \t' + data[3] + '\n')
+      file.write('Affected service: \t' + data[4] + ' on port ' + data[5] + '/' + data[6] + '\n')
+      file.write('Description: \n\t' + data[7].replace('\n','\n\t') + '\n')
+      file.write('Solution: \n\t' + data[8].replace('\n','\n\t') + '\n')
+      file.write(data[9] + '\n')
+      file.write(data[10] + '\n')
+      file.write('Plugin output: \n\t' + data[11] + '\n')
+      file.write('References: \n\t' + data[12].replace('\n','\n\t') + '\n')
+
+  def extractVulns(self, path, reptype, *args):
+    if reptype == 'xlsx':
+      ws = args[0]
+      row = args[1]
     # Recursively proceesses all nessus files from all specified folders
     if len(path) > 0:
       # Obtains all nessus files from each folder
@@ -363,39 +412,25 @@ class Nessus:
                   
                   # Translates vulnerabilities if specified by -T optional parameter
                   found = False
-                  if args:
+                  lang_vuln = []
+                  if reptype == 'xlsx' and len(args) == 3:
+                    lang_vuln = self.getVulnT(args[2], int(pluginID))
+                  elif reptype == 'txt' and len(args) == 1:
                     lang_vuln = self.getVulnT(args[0], int(pluginID))
-                    if lang_vuln:
-                      found = True
-                      vulnerability = lang_vuln[1]
-                      description = lang_vuln[2]
-                      solution = lang_vuln[3]
+                  if lang_vuln:
+                    found = True
+                    vulnerability = lang_vuln[1]
+                    description = lang_vuln[2]
+                    solution = lang_vuln[3]
 
-                  # Write all extracted information to Excel report
-                  ws.write(row, 0, pluginID, self.stText)
-                  if found or not args:
-                    ws.write(row, 1, vulnerability, self.stVuln)
-                  else:
-                    ws.write(row, 1, vulnerability, self.stVulnNF)
-                  if risk == "1":
-                    ws.write(row, 2, "Low", self.stLow)
-                  if risk == "2":
-                    ws.write(row, 2, "Medium", self.stMedium)
-                  if risk == "3":
-                    ws.write(row, 2, "High", self.stHigh)
-                  if risk == "4":
-                    ws.write(row, 2, "Critical", self.stCritical)
-                  ws.write(row, 3, ip, self.stText)
-                  ws.write(row, 4, port, self.stText)
-                  ws.write(row, 5, service, self.stText)
-                  ws.write(row, 6, protocol, self.stText)
-                  ws.write(row, 7, description, self.stText)
-                  ws.write(row, 8, solution, self.stText)
-                  ws.write(row, 9, cve, self.stText)
-                  ws.write(row, 10, cvss, self.stText)
-                  ws.write(row, 11, output[0:32767], self.stText)
-                  ws.write_string(row, 12, ref, self.stText)
-                  row += 1
+                  # Write all extracted information to XLSX report if selected
+                  if reptype == 'xlsx':
+                    self.nessus2xlsx(ws, row, found, pluginID, vulnerability, risk, ip, port, service, protocol, description, solution, cve, cvss, output, ref,)
+                    row += 1
+
+                  # Write all extracted information to TXT simple report if selected
+                  elif reptype == 'txt':
+                    self.nessus2txt(vulnerability, pluginID, risk, ip, service, port, protocol, description, solution, cve, cvss, output, ref)
             dom.unlink()
           except ExpatError:
             print(Fore.RED + "[!] [ERROR] Apparently there's a bad XML file"); raise
@@ -404,16 +439,20 @@ class Nessus:
           except:
             print(Fore.RED + "[!] [Unexpected Error]"); raise
       del path[0]
-      if args:
-        self.nessus2xls(path, ws, row, args[0])
-      else:
-        self.nessus2xls(path, ws, row)
-    else:
-      ws.autofilter(0, 0, row-1, 11) 
+      if reptype == 'xlsx' and len(args) == 3:
+        self.extractVulns(path, reptype, ws, row, args[2])
+      elif reptype == 'xlsx' and len(args) == 2:
+        self.extractVulns(path, reptype, ws, row)
+      elif reptype == 'txt' and len(args) == 1:
+        self.extractVulns(path, reptype, args[0])
+      elif reptype == 'txt' and not args:
+        self.extractVulns(path, reptype)
+    if len(path) == 0 and reptype == 'xlsx':
+      ws.autofilter(0, 0, row-1, 11)
 
 def checkUpdate():
   try:
-    current = '3.0.2'
+    current = '3.1.0'
     pattern = re.compile(r"##\s\[\d+\.\d+\.\d+\]")
     url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG.md'
     data = requests.get(url, stream=True)
@@ -430,20 +469,21 @@ def options():
     epilog='''EXAMPLES: 
     python secutils.py -t Project/Discovery/ -p Project/Enum/
     python secutils.py -rn Project/Discovery/target1 -o Report
-    python secutils.py -rN Project/target1/nessus Project/target2/nessus/ -T spanish -o Report.xls''')
+    python secutils.py -rN Project/target1/nessus Project/target2/nessus/ -T spanish -o Report.xlsx''')
   
   parser._optionals.title = "MISC"
   parser.add_argument('-v', '--version', action='version', version='%(prog)s 2.6.0')
-  parser.add_argument('-o', metavar='OUTPUT-FILE', dest='output', action='append', help='Set an xlsx output file')
+  parser.add_argument('-o', metavar='OUTPUT-FILE', dest='output', action='append', help='Set an XLSX output file')
 
   nmapGroup = parser.add_argument_group('NMAP REPORT')
   nmapGroup.add_argument('-t', metavar='DIR', nargs='+', dest='targets', action='append', help='Create a list of targets from nmap files in xml format located in DIR')
   nmapGroup.add_argument('-p', metavar='DIR', nargs='+', dest='ports', action='append', help='Create list of open ports from nmap files in xml format located in DIR')
-  nmapGroup.add_argument('-rn', metavar='DIR', nargs='+', dest='nmap', action='append', help='Create an XLS report from nmap files in xml format located in DIR')
+  nmapGroup.add_argument('-rn', metavar='DIR', nargs='+', dest='nmap', action='append', help='Create an XLSX report from nmap files in xml format located in DIR')
   
   nessusGroup = parser.add_argument_group('NESSUS REPORT')
-  nessusGroup.add_argument('-rN', metavar='DIR', nargs='+', dest='nessus', action='append', help='Create an XLS report from .nessus files located in DIR')
-  nessusGroup.add_argument('-T', metavar='LANGUAGE', dest='lang', help='Use an xls database FILE to translate nessus reports. Must be used along with -rN')
+  nessusGroup.add_argument('-rN', metavar='DIR', nargs='+', dest='nessusxlsx', action='append', help='Create an XLSX report from .nessus files located in DIR')
+  nessusGroup.add_argument('-sN', metavar='DIR', nargs='+', dest='nessustxt', action='append', help='Create a TXT simple report from .nessus files located in DIR')
+  nessusGroup.add_argument('-T', metavar='LANGUAGE', dest='lang', help='Use a SQLite database to translate nessus reports. Must be used along with -rN')
 
   if len(sys.argv) == 1:
     return parser.parse_args('--help'.split())
@@ -459,7 +499,7 @@ ______ ____  ____  __ ___/  |_|__|  |   ______
 \___ \\  ___\  \___|  |  /|  | |  |  |__\___ \ 
 /____  >\___  \___  |____/ |__| |__|____/____  >
    \/     \/    \/                         \/ 
-                          - secutils v3.0.2 - 
+                          - secutils v3.1.0 - 
                                   by @zkvL
   ''')
   checkUpdate()
@@ -470,12 +510,12 @@ ______ ____  ____  __ ___/  |_|__|  |   ______
       nmap = Nmap()
       if args.targets:
         print(Fore.YELLOW + "[-] Retrieve alive IPs from nmap output:")
-        nmap.write_t(nmap.getTargets(nmap.setPath(args.targets[0])))
+        nmap.write_nmap_data(nmap.getTargets(nmap.setPath(args.targets[0])), 'targets.txt', '\n')
         print(Fore.GREEN + "[+] targets.txt file successfully created!")
         
       if args.ports:
         print(Fore.YELLOW + "[-] Retrieve open ports from nmap output")
-        nmap.write_p(nmap.getPorts(nmap.setPath(args.ports[0])))
+        nmap.write_nmap_data(nmap.getPorts(nmap.setPath(args.ports[0])), 'ports.txt', ',')
         print(Fore.GREEN + "[+] ports.txt file successfully created!")
       
       if args.nmap:
@@ -492,29 +532,47 @@ ______ ____  ____  __ ___/  |_|__|  |   ______
           print(Fore.GREEN + "[+] Enumeration sheet was successfully created into file:\n" + nmap.reportName + "\n")
 
     # Options for Nessus module operations
-    if args.nessus:
+    if args.nessusxlsx or args.nessustxt:
       nessus = Nessus()
-      if args.output:
+      if args.output and args.nessusxlsx :
         nessus.setOutput(args.output[0])
       
-      # Create the Excel file & set custom format
-      print(Fore.YELLOW + "[-] Create Excel report from NESSUS outputs:")
-      with xlsxwriter.Workbook(nessus.reportName,{'strings_to_urls': False}) as workbook:
-        wb = nessus.confWb(workbook)
-        ws = wb.add_worksheet('Vulnerability Assessment')
-        nessus.setTitle(ws)
+      if args.nessusxlsx :
+        # Create the Excel file & set custom format
+        print(Fore.YELLOW + "[-] Create Excel report from NESSUS outputs:")
+        with xlsxwriter.Workbook(nessus.reportName,{'strings_to_urls': False}) as workbook:
+          wb = nessus.confWb(workbook)
+          ws = wb.add_worksheet('Vulnerability Assessment')
+          nessus.setTitle(ws)
+          if args.lang and args.lang == 'spanish':
+            # Downloads the lang.db SQLite file and open the database
+            nessus.download_db(args.lang)
+            db_conn = sqlite3.connect(args.lang+'.db')
+            cursor = db_conn.cursor()
+            nessus.extractVulns(nessus.setPath(args.nessusxlsx [0]), 'xlsx', ws, 1, cursor)
+            db_conn.close()
+          elif not args.lang or (args.lang and args.lang != 'spanish'):
+            if args.lang and args.lang != 'spanish':
+              print(Fore.RED + "[!] Currently only spanish language is supported; file will not be translated") 
+            nessus.extractVulns(nessus.setPath(args.nessusxlsx [0]), 'xlsx', ws, 1)
+          print(Fore.GREEN + "[+] Vuln Assessment sheet was successfully created into file:\n" +nessus.reportName + "\n")
+
+      if args.nessustxt:
+        # Create the TXT file
+        print(Fore.YELLOW + "[-] Create simple TXT report from NESSUS outputs:")
         if args.lang and args.lang == 'spanish':
-          # Downloads the lang.db SQLite file and open the database
-          nessus.download_db(args.lang)
-          db_conn = sqlite3.connect(args.lang+'.db')
-          cursor = db_conn.cursor()
-          nessus.nessus2xls(nessus.setPath(args.nessus[0]), ws, 1, cursor)
-          db_conn.close()
+            # Downloads the lang.db SQLite file and open the database
+            nessus.download_db(args.lang)
+            db_conn = sqlite3.connect(args.lang+'.db')
+            cursor = db_conn.cursor()
+            nessus.extractVulns(nessus.setPath(args.nessustxt[0]), 'txt', cursor)
+            db_conn.close()
         elif not args.lang or (args.lang and args.lang != 'spanish'):
           if args.lang and args.lang != 'spanish':
             print(Fore.RED + "[!] Currently only spanish language is supported; file will not be translated") 
-          nessus.nessus2xls(nessus.setPath(args.nessus[0]), ws, 1)
-        print(Fore.GREEN + "[+] Vuln Assessment sheet was successfully created into file:\n" +nessus.reportName + "\n")
+          nessus.extractVulns(nessus.setPath(args.nessustxt[0]), 'txt')
+        print(Fore.GREEN + "[+] SecutilsNessusReport txt file successfully created")
+
   except IOError:
     print(Fore.RED + "[!] ERROR: Fail to open necessary files")
   except:

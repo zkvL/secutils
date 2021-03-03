@@ -12,6 +12,29 @@ This file contains the history of the changes made to secutils since it was born
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+- Create Excel class to manage all standard functions from any module 
+	- writing
+	- setting styles
+	- setting titles
+	- setting output filename
+	- etc.
+
+---
+## [3.1.0] - TBD
+### Added
+- `-sN` option added to create simple TXT report files from .nessus files
+
+### Changed
+- Nessus module
+	- Code changed to avoid duplicity:
+	One single function to extract vulnerabilities from .nessus files 
+	Separate functions to write Excel or TXT files
+
+- Nmap module
+	- Code also changed to avoid duplicity:
+	One single function to write targets and ports
+
+- Help menu changed since it was not previously updated
 
 ---
 ## [3.0.2] - 2021-02-22
@@ -105,7 +128,7 @@ Update from xls to xlsx reports format
 ## [0.0.9] - 2015-06-27
 ### Added
 - Nmap module
-	- Creation of Excel reports from nmap enumeration or discovery files in xml format generated with the nmap flag -oX
+	- Creation of Excel reports from nmap enumeration or discovery files in xml format generated with the nmap flag `-oX`
 	- Creation of lists of targets (targets.txt) from .xml files obtained from nmap discovery  
 	- Creation of comma separated lists of open ports (ports.txt) from .xml files obtained from nmap enumeration  
 - Nessus module
