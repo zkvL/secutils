@@ -1,3 +1,4 @@
-xlsxwriter
 colorama
+requests
 tqdm
+xlsxwriter

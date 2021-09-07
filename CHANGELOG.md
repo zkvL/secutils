@@ -7,20 +7,28 @@
 /____  >\___  \___  |____/ |__| |__|____/____  >
      \/     \/    \/                         \/ 
 ```
-This file contains the history of the changes made to secutils since it was born.
+This file contains the history of the changes made to `secutils` since it was born.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Create Excel class to manage all standard functions from any module 
-	- writing
-	- setting styles
-	- setting titles
-	- setting output filename
-	- etc.
+- Move writing function to report module
 
 ---
-## [3.1.0] - TBD
+## [3.5.0] - 2021-09-07
+### Added
+- Added option to avoid searching for updates
+- Excel spreadsheet styles easy management within its module 
+- `secutils` modules packaged, can be installed now
+
+### Changed
+- Arguments grouped as modules for intuitive use (check the new help)
+
+### Fixed
+- Corrected cell merge bug when merging one cell
+
+---
+## [3.1.0] - 2021-03-02
 ### Added
 - `-sN` option added to create simple TXT report files from .nessus files
 
