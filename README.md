@@ -104,4 +104,4 @@ secutils allows to automatically translate Nessus vulnerabilities if a database 
 Currently, only Spanish translation is added to the databases set; if you have an update for the vulns described within the `spanish.db` file please send me a mail/dm and I'll be glad to update the file. Also if you can provide a different language schema it would be awesome to add it to the DBs set.
 
 ### Contact
-[Yael | @zkvL7](mailto:zkvl@huitzek.mx)
+[Yael | @zkvL_](mailto:zkvl@huitzek.mx)
