@@ -95,7 +95,7 @@ def nessusModule(args):
 def checkUpdate():
 	try:
 		pattern = re.compile(r"##\s\[\d+\.\d+\.\d+\]")
-		url = 'https://raw.githubusercontent.com/zkvL7/secutils/master/CHANGELOG.md'
+		url = 'https://raw.githubusercontent.com/zkvL/secutils/master/CHANGELOG.md'
 		data = requests.get(url, stream=True)
 
 		lastest = pattern.findall(str(data.content))[0]
